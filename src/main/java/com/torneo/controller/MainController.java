@@ -18,23 +18,35 @@ public class MainController {
     private final ActivityLogRepository logRepository;
     private final SongRepository songRepository;
     private final ChallengeRepository challengeRepository;
+    private final AppConfigRepository appConfigRepository; // <--- Añadido repositorio
     private final TorneoService torneoService;
-
-    private int activeDay = 1;
 
     public MainController(UserRepository userRepository, ActivityLogRepository logRepository,
                           SongRepository songRepository, ChallengeRepository challengeRepository,
-                          TorneoService torneoService) {
+                          AppConfigRepository appConfigRepository, TorneoService torneoService) {
         this.userRepository = userRepository;
         this.logRepository = logRepository;
         this.songRepository = songRepository;
         this.challengeRepository = challengeRepository;
+        this.appConfigRepository = appConfigRepository;
         this.torneoService = torneoService;
+    }
+
+    // Método de ayuda para obtener el día desde la BBDD
+    private int getActiveDay() {
+        AppConfig config = appConfigRepository.findById("config").orElse(null);
+        if (config == null) {
+            config = new AppConfig("config", 1); // Por defecto empieza en 1
+            appConfigRepository.save(config);
+        }
+        return config.getActiveDay();
     }
 
     @GetMapping("/")
     public String index(HttpSession session, Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
+        int activeDay = getActiveDay(); // Leer de BBDD
+
         model.addAttribute("user", loggedUser);
         model.addAttribute("activeDay", activeDay);
 
@@ -102,6 +114,7 @@ public class MainController {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) return "redirect:/";
 
+        int activeDay = getActiveDay();
         torneoService.registrarActividad(loggedUser, type, amount, gameOrDetail, activeDay);
 
         return "redirect:/";
@@ -111,7 +124,10 @@ public class MainController {
     public String setDay(@RequestParam int day, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser != null && loggedUser.isAdmin()) {
-            this.activeDay = day;
+            // Guardar el nuevo día en la BBDD
+            AppConfig config = appConfigRepository.findById("config").orElse(new AppConfig("config", 1));
+            config.setActiveDay(day);
+            appConfigRepository.save(config);
         }
         return "redirect:/";
     }
@@ -124,6 +140,7 @@ public class MainController {
                                   HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser != null && loggedUser.isAdmin()) {
+            int activeDay = getActiveDay();
             Challenge challenge = new Challenge(title, description, points, activeDay, targetType);
             challengeRepository.save(challenge);
         }
@@ -147,6 +164,7 @@ public class MainController {
                                 HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser != null && loggedUser.isAdmin()) {
+            int activeDay = getActiveDay();
             Optional<User> targetUser = userRepository.findById(userId);
             targetUser.ifPresent(user -> 
                 torneoService.registrarAjusteAdmin(user, amount, motivo, activeDay)

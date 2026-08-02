@@ -79,6 +79,15 @@
             font-weight: bold;
         }
 
+        /* ESTILO AÑADIDO PARA LA FOTO DEL AVATAR */
+        .foto-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
         .drawer {
             position: fixed;
             top: 0;
@@ -259,7 +268,12 @@
 
     <div>
         <div th:if="${user != null}" class="user-badge">
-            <div class="avatar-placeholder" th:text="${user.name.substring(0,1)}">U</div>
+            
+            <!-- LOGICA DE IMAGENES PARA EL AVATAR AÑADIDA AQUI -->
+            <img th:if="${user.team == 'PAPICHECHU'}" th:src="@{/img/chechu.jpeg}" class="foto-avatar" alt="Avatar Chechu">
+            <img th:if="${user.team == 'TUTIORODRI'}" th:src="@{/img/rodri.jpeg}" class="foto-avatar" alt="Avatar Rodri">
+            <div th:if="${user.team != 'PAPICHECHU' and user.team != 'TUTIORODRI'}" class="avatar-placeholder" th:text="${user.name.substring(0,1)}">U</div>
+
             <div>
                 <strong th:text="${user.name}">Usuario</strong>
                 <span style="font-size: 0.8em;" th:text="'(Grupo ' + ${user.subgroup} + ')'">(Grupo 1)</span>
