@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torneo de Verano 2026</title>
+    <style>
+        :root {
+            --primary-color: #4a5568;
+            --accent-color: #3182ce;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+        }
+
+        body.theme-PAPICHECHU {
+            --primary-color: #c53030;
+            --accent-color: #e53e3e;
+            --bg-color: #fff5f5;
+        }
+
+        body.theme-TUTIORODRI {
+            --primary-color: #2b6cb0;
+            --accent-color: #3182ce;
+            --bg-color: #ebf8ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .avatar-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--card-bg);
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+            transition: left 0.3s ease;
+            z-index: 1000;
+            padding-top: 20px;
+        }
+
+        .drawer.open {
+            left: 0;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            z-index: 999;
+        }
+
+        .drawer-overlay.show {
+            display: block;
+        }
+
+        .drawer-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-menu {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .drawer-menu li a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .drawer-menu li a:hover {
+            background-color: #edf2f7;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .grid-subgroups {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .counter-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .counter-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #cbd5e0;
+            background: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        input, select, button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .btn-success {
+            background-color: #48bb78;
+        }
+
+        .admin-box {
+            background-color: #feebc8;
+            border: 1px solid #fbd38d;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .reto-bubble {
+            background: linear-gradient(135deg, #f6e05e, #ecc94b); 
+            padding: 15px; 
+            border-radius: 50px 20px 20px 50px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            flex: 1 1 300px; 
+            max-width: 450px;
+        }
+        
+        .reto-points-circle {
+            background: white; 
+            border-radius: 50%; 
+            min-width: 70px; 
+            height: 70px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            color: #d69e2e;
+        }
+    </style>
+</head>
+<body th:class="${user != null} ? 'theme-' + ${user.team} : ''">
+
+<div class="drawer-overlay" id="drawerOverlay" onclick="toggleMenu()"></div>
+
+<div class="drawer" id="drawerMenu">
+    <div class="drawer-header">
+        <h3 style="margin: 0;">Menú Torneo</h3>
+        <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer;">✖</button>
+    </div>
+    <ul class="drawer-menu">
+        <li><a href="#" onclick="switchTab('ranking')">📊 Ranking de Subgrupos</a></li>
+        <li><a href="#" onclick="switchTab('chechu-vs-rodri')">⚔️ Chechu vs Rodri</a></li>
+        <li><a href="#" onclick="switchTab('trabajo-hoy')">📝 Trabajo de Hoy</a></li>
+        <li><a href="#" onclick="switchTab('espectador-admin')">👁️ Espectador / Admin</a></li>
+    </ul>
+</div>
+
+<header>
+    <div class="header-left">
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <h2 style="margin: 0;">☀️ Torneo de Verano</h2>
+    </div>
+
+    <div>
+        <div th:if="${user != null}" class="user-badge">
+            <div class="avatar-placeholder" th:text="${user.name.substring(0,1)}">U</div>
+            <div>
+                <strong th:text="${user.name}">Usuario</strong>
+                <span style="font-size: 0.8em;" th:text="'(Grupo ' + ${user.subgroup} + ')'">(Grupo 1)</span>
+                <span th:text="${user.trait}">⚽</span>
+                <span style="font-size: 0.85em; font-weight: bold; margin-left: 5px;">| <span th:text="${#numbers.formatDecimal(@torneoService.getMvpScore(user.id), 1, 2)}">0.00</span> pts</span>
+            </div>
+            <a th:href="@{/logout}" style="color: white; margin-left: 10px; text-decoration: none;">🚪</a>
+        </div>
+
+        <form th:if="${user == null}" th:action="@{/login}" method="post" style="display: inline-flex; gap: 5px;">
+            <input type="text" name="name" placeholder="Usuario" required style="width: 100px;">
+            <input type="password" name="password" placeholder="PIN" required style="width: 80px;">
+            <button type="submit" class="btn-submit">Entrar</button>
+        </form>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- 1. RANKING DE SUBGRUPOS -->
+    <div id="ranking" class="tab-content active">
+        <div class="card">
+            <h2>📊 Ranking de Subgrupos</h2>
+            <div class="grid-subgroups">
+                <div th:each="entry : ${subgroupScores}" th:with="subgroupScore=${entry.value}" class="card" style="border-left: 5px solid var(--accent-color);">
+                    <h3 th:text="'Subgrupo ' + ${entry.key}">Subgrupo 1</h3>
+                    <p style="font-size: 1.5em; font-weight: bold; color: var(--accent-color);">
+                        <span th:text="${#numbers.formatDecimal(subgroupScore, 1, 2)}">0.00</span> pts
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. CHECHU VS RODRI -->
+    <div id="chechu-vs-rodri" class="tab-content">
+        
+        <!-- BURBUJAS DE RETO DIARIO PERMANENTES -->
+        <div th:if="${allDailyChallenges != null and !allDailyChallenges.isEmpty()}" style="margin-bottom: 25px;">
+            <h2 style="margin-top: 0;">🔥 Retos del Día</h2>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div th:each="reto : ${allDailyChallenges}" class="reto-bubble">
+                    <div class="reto-points-circle">
+                        <span th:text="${#numbers.formatDecimal(reto.points, 1, 1)}" style="font-size: 1.6em; line-height: 1;">0.0</span>
+                        <span style="font-size: 0.65em; margin-top: 2px;">PUNTOS</span>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <h4 th:text="${reto.title}" style="margin: 0 0 5px 0; color: #744210; text-transform: uppercase;">Nombre del Reto</h4>
+                            <span th:text="${reto.targetType}" style="font-size: 0.7em; background: rgba(255,255,255,0.6); padding: 2px 6px; border-radius: 10px; color: #744210; font-weight: bold;">TIPO</span>
+                        </div>
+                        <p th:text="${reto.description}" style="margin: 0; font-size: 0.95em; color: #975a16; line-height: 1.3;">Descripción del reto aquí.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚔️ Chechu vs Rodri</h2>
+            
+            <h3>🎵 Canciones Sugeridas del Día <span th:text="${activeDay}">1</span></h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4 style="color: #2b6cb0;">🔵 TUTIORODRI</h4>
+                    <ul>
+                        <li th:each="song : ${todaySongsTutiorodri}">
+                            <strong th:text="${song.title}">Song</strong> - <span th:text="${song.artist}">Artist</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #c53030;">🔴 PAPICHECHU</h4>
+                    <ul>
+                        <li th:each="song : ${todaySongsPapichechu}">
+                            <strong th:text="${song.title}">Song</strong> - <span th:text="${song.artist}">Artist</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr>
+
+            <h3>🏆 Top Líderes MVP</h3>
+            <ol>
+                <li th:each="u : ${topMvps}">
+                    <span th:text="${u.name}">Nombre</span> 
+                    (<span th:text="${u.team}">Equipo</span>) - 
+                    <strong>
+                        <span th:text="${#numbers.formatDecimal(@torneoService.getMvpScore(u.id), 1, 2)}">0.00</span> pts
+                    </strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- 3. TRABAJO DE HOY -->
+    <div id="trabajo-hoy" class="tab-content">
+        <div class="card">
+            <h2>📝 Registrar Trabajo de Hoy</h2>
+            
+            <div th:if="${user == null}">
+                <p>⚠️ Debes iniciar sesión para registrar tus actividades.</p>
+            </div>
+
+            <form th:if="${user != null}" th:action="@{/log/activity}" method="post">
+                <div style="display: flex; flex-direction: column; gap: 12px; max-width: 400px;">
+                    <label>Tipo de Actividad:</label>
+                    <select name="type" id="activityType" class="form-select" onchange="onActivityTypeChange()" required>
+                        <th:block th:if="${userSport == null}">
+                            <option value="Correr">🏃‍♂️ Correr (km)</option>
+                            <option value="Ciclismo">🚲 Ciclismo (km)</option>
+                            <option value="Futbol">⚽ Fútbol (min)</option>
+                        </th:block>
+
+                        <th:block th:if="${userSport != null}">
+                            <option th:value="${userSport}" th:text="${userSport}"></option>
+                        </th:block>
+
+                        <option value="Aguadillas">🌊 Aguadillas (unidades)</option>
+                        <option value="Cartas">🃏 Cartas (victoria)</option>
+                        <option value="Piscina">⏰ Piscina &lt; 17:00h</option>
+                        <option value="Cancion">🎤 Canción (Juez rival)</option>
+                        
+                        <option th:if="${user != null and @torneoService.isFotoAvailable(user.subgroup, activeDay)}" value="Foto">📸 Foto (8.0 pts)</option>
+                        
+                        <!-- Opción de Reto (se mostrará el select secundario) -->
+                        <option value="Reto">🎯 Reto Diario Completado</option>
+                    </select>
+
+                    <div id="amountWrapper">
+                        <label>Cantidad / Valor:</label>
+                        <div class="counter-control">
+                            <button type="button" class="counter-btn" onclick="adjustAmount(-1)">-</button>
+                            <input type="number" id="amountInput" name="amount" value="1.0" step="0.1" min="0.1" max="100" style="width: 80px; text-align: center;">
+                            <button type="button" class="counter-btn" onclick="adjustAmount(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div id="cartasSelector" style="display: none;">
+                        <label>Juego de Cartas:</label>
+                        <select name="gameOrDetail" id="cartasDetailInput" disabled>
+                            <option value="Gili">Gili</option>
+                            <option value="Culo">Culo</option>
+                            <option value="Mentiroso">Mentiroso</option>
+                            <option value="Chimichurri">Chimichurri</option>
+                            <option value="Remi">Remi</option>
+                            <option value="Cuadrado">Cuadrado</option>
+                            <option value="Mus">Mus</option>
+                            <option value="Buitre">Buitre</option>
+                            <option value="Poker">Poker</option>
+                        </select>
+                    </div>
+
+                    <div id="cancionSelector" style="display: none;">
+                        <label>Nombre del Juez (Rival):</label>
+                        <input type="text" name="gameOrDetail" id="juezDetailInput" placeholder="Escribe el nombre del juez" disabled>
+                    </div>
+
+                    <div id="retoSelector" style="display: none;">
+                        <label>Selecciona el Reto Completado:</label>
+                        <select name="gameOrDetail" id="retoDetailInput" disabled>
+                            <option th:each="r : ${availableChallenges}" th:value="${r.id}" th:text="${r.title} + ' (' + ${r.points} + ' pts)'"></option>
+                        </select>
+                        <p th:if="${availableChallenges.isEmpty()}" style="color: #e53e3e; font-size: 0.9em; margin-top: 5px;">
+                            No tienes retos pendientes o disponibles hoy.
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn-submit">💾 Registrar / Completar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. MODO ESPECTADOR / ADMIN PANEL -->
+    <div id="espectador-admin" class="tab-content">
+        <div th:if="${user != null and user.admin}" class="admin-box">
+            <h3>⚙️ Panel de Control Administrador</h3>
+            
+            <form th:action="@{/admin/set-day}" method="post" style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                <label>Cambiar Día Activo (1-7):</label>
+                <input type="number" name="day" th:value="${activeDay}" min="1" max="7" style="width: 60px;">
+                <button type="submit" class="btn-submit">Cambiar Día</button>
+            </form>
+
+            <h4>📢 Publicar Reto Sorpresa</h4>
+            <form th:action="@{/admin/challenge}" method="post" style="display: flex; flex-direction: column; gap: 8px; max-width: 400px;">
+                <input type="text" name="title" placeholder="Título del reto" required>
+                <input type="text" name="description" placeholder="Descripción" required>
+                <input type="number" step="0.1" name="points" placeholder="Puntos" required>
+                <select name="targetType">
+                    <option value="INDIVIDUAL">Individual</option>
+                    <option value="SUBGRUPO">Subgrupo (Desaparece p/ todo el grupo)</option>
+                </select>
+                <button type="submit" class="btn-submit">Publicar Reto</button>
+            </form>
+
+            <hr style="margin: 15px 0;">
+
+            <h4>⚖️ Ajuste Manual de Puntos (Quitar / Poner)</h4>
+            <form th:action="@{/admin/ajustar-puntos}" method="post" style="display: flex; flex-direction: column; gap: 8px; max-width: 400px; margin-bottom: 15px;">
+                <label>Usuario a modificar:</label>
+                <select name="userId" required>
+                    <option value="" disabled selected>Selecciona un usuario...</option>
+                    <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.name}"></option>
+                </select>
+                
+                <label>Puntos a sumar o restar (usa el signo menos para quitar):</label>
+                <input type="number" name="amount" step="0.1" placeholder="Ej: -5.0 (quitar) o 5.0 (poner)" required>
+                
+                <label>Motivo del ajuste:</label>
+                <input type="text" name="motivo" placeholder="Ej: Penalización por trampa" required>
+                
+                <button type="submit" class="btn-submit" style="background-color: #d69e2e;">Aplicar Ajuste</button>
+            </form>
+
+            <hr style="margin: 15px 0;">
+
+            <form th:action="@{/admin/reset}" method="post">
+                <button type="submit" style="background-color: #e53e3e; color: white; border: none; font-weight: bold; cursor: pointer;"
+                        onclick="return confirm('¿Borrar todos los datos de prueba?');">
+                    🗑️ Resetear Datos de Prueba
+                </button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>📋 Historial de Registros</h3>
+            <ul>
+                <li th:each="log : ${logs}">
+                    <strong th:text="${log.userName}">Usuario</strong> 
+                    (<span th:text="${log.team}">Equipo</span>) - 
+                    <span th:text="${log.type}">Tipo</span>: 
+                    <span th:text="${log.amount}">1</span> 
+                    
+                    <span th:if="${log.gameOrDetail != null and log.gameOrDetail != ''}">
+                        <span th:if="${log.type == 'Cancion'}" th:text="'(Juez: ' + ${log.gameOrDetail} + ')'"></span>
+                        <span th:if="${log.type != 'Cancion'}" th:text="'(' + ${log.gameOrDetail} + ')'"></span>
+                    </span>
+
+                    - <em th:text="${#numbers.formatDecimal(log.pointsMvp, 1, 2)} + ' pts MVP'">0 pts</em>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function toggleMenu() {
+        document.getElementById('drawerMenu').classList.toggle('open');
+        document.getElementById('drawerOverlay').classList.toggle('show');
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        toggleMenu();
+    }
+
+    function adjustAmount(val) {
+        const input = document.getElementById('amountInput');
+        if (input.disabled || input.readOnly) return;
+
+        const step = parseFloat(input.step) || 1;
+        let current = parseFloat(input.value) || 0;
+        let newValue = current + (val * step);
+
+        const min = parseFloat(input.min) || 0;
+        const max = parseFloat(input.max) || 999;
+        
+        newValue = Math.max(min, Math.min(max, newValue));
+        
+        input.value = Math.round(newValue * 10) / 10;
+    }
+
+    function onActivityTypeChange() {
+        const type = document.getElementById("activityType").value;
+        const amountInput = document.getElementById("amountInput");
+        const amountWrapper = document.getElementById("amountWrapper");
+
+        const cartasSelector = document.getElementById("cartasSelector");
+        const cartasDetailInput = document.getElementById("cartasDetailInput");
+
+        const cancionSelector = document.getElementById("cancionSelector");
+        const juezDetailInput = document.getElementById("juezDetailInput");
+
+        const retoSelector = document.getElementById("retoSelector");
+        const retoDetailInput = document.getElementById("retoDetailInput");
+
+        // Resetear visualización
+        if (cartasSelector) cartasSelector.style.display = "none";
+        if (cartasDetailInput) cartasDetailInput.disabled = true;
+
+        if (cancionSelector) cancionSelector.style.display = "none";
+        if (juezDetailInput) {
+            juezDetailInput.disabled = true;
+            juezDetailInput.required = false;
+        }
+
+        if (retoSelector) retoSelector.style.display = "none";
+        if (retoDetailInput) {
+            retoDetailInput.disabled = true;
+            retoDetailInput.required = false;
+        }
+
+        if (amountWrapper) amountWrapper.style.display = "block";
+        if (amountInput) {
+            amountInput.disabled = false;
+            amountInput.readOnly = false;
+        }
+
+        if (type === "Cartas") {
+            if (cartasSelector) cartasSelector.style.display = "block";
+            if (cartasDetailInput) cartasDetailInput.disabled = false;
+        } else if (type === "Cancion") {
+            if (cancionSelector) cancionSelector.style.display = "block";
+            if (juezDetailInput) {
+                juezDetailInput.disabled = false;
+                juezDetailInput.required = true;
+            }
+        } else if (type === "Foto") {
+            if (amountInput) {
+                amountInput.value = 1.0;
+                amountInput.readOnly = true;
+            }
+        } else if (type === "Reto") {
+            // Escondemos cantidad para Reto, el backend tomará sus puntos exactos
+            if (amountWrapper) amountWrapper.style.display = "none";
+            if (amountInput) amountInput.disabled = true; // Desactivar para que no lo mande en post
+            
+            if (retoSelector) retoSelector.style.display = "block";
+            if (retoDetailInput) {
+                retoDetailInput.disabled = false;
+                retoDetailInput.required = true;
+            }
+        }
+    }
+    
+    // Iniciar el script para que verifique la primera carga de formulario
+    document.addEventListener("DOMContentLoaded", function() {
+        onActivityTypeChange();
+    });
+</script>
+</body>
+</html>
