@@ -7,4 +7,4 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17.0.1-jdk-slim
 COPY --from=build /target/torneo-verano-1.0.0.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-Xmx384m","-jar","app.jar"]
+ENTRYPOINT ["java", "-Xmx256m","-jar","app.jar"]
